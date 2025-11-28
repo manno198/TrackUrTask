@@ -7,22 +7,25 @@ import Tasks from './pages/Tasks';
 import EmployeeDetail from './pages/EmployeeDetail';
 import { mockData } from './data/mockData';
 import useLocalStorage from './hooks/useLocalStorage';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   // Use localStorage to persist data (bonus feature)
   const [employees, setEmployees] = useLocalStorage('employeeData', mockData.employees);
 
   return (
-    <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard employees={employees} />} />
-          <Route path="/employees" element={<Employees employees={employees} />} />
-          <Route path="/employees/:id" element={<EmployeeDetail employees={employees} />} />
-          <Route path="/tasks" element={<Tasks employees={employees} setEmployees={setEmployees} />} />
-        </Routes>
-      </Layout>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Dashboard employees={employees} />} />
+            <Route path="/employees" element={<Employees employees={employees} />} />
+            <Route path="/employees/:id" element={<EmployeeDetail employees={employees} />} />
+            <Route path="/tasks" element={<Tasks employees={employees} setEmployees={setEmployees} />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

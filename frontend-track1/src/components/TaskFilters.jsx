@@ -6,7 +6,7 @@ const TaskFilters = ({ currentFilter, onFilterChange }) => {
 
   return (
     <div className="flex flex-wrap items-center gap-3" data-testid="task-filters">
-      <div className="flex items-center gap-2 text-gray-600">
+      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
         <Filter className="w-5 h-5" />
         <span className="text-sm font-medium">Filter:</span>
       </div>
@@ -20,7 +20,7 @@ const TaskFilters = ({ currentFilter, onFilterChange }) => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               currentFilter === filter
                 ? 'bg-primary-500 text-white shadow-lg scale-105'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 hover:shadow-md'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:shadow-md'
             }`}
           >
             {filter}

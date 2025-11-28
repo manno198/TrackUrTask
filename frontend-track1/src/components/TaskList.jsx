@@ -11,8 +11,8 @@ const TaskList = ({ tasks, filter }) => {
     return (
       <div className="card text-center py-12" data-testid="empty-tasks-message">
         <Inbox className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">No tasks found</h3>
-        <p className="text-gray-600">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No tasks found</h3>
+        <p className="text-gray-600 dark:text-gray-300">
           {filter === 'All' 
             ? 'No tasks available. Add your first task to get started!' 
             : `No ${filter.toLowerCase()} tasks at the moment.`}

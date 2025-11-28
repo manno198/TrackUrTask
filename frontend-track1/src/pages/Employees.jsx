@@ -13,10 +13,10 @@ const Employees = ({ employees }) => {
   return (
     <div data-testid="employees-page">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2" data-testid="employees-title">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2" data-testid="employees-title">
           Employees
         </h1>
-        <p className="text-gray-600">Manage your team members and their tasks</p>
+        <p className="text-gray-600 dark:text-gray-300">Manage your team members and their tasks</p>
       </div>
 
       {/* Search Bar */}
@@ -44,8 +44,8 @@ const Employees = ({ employees }) => {
       ) : (
         <div className="card text-center py-12" data-testid="no-employees-message">
           <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No employees found</h3>
-          <p className="text-gray-600">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No employees found</h3>
+          <p className="text-gray-600 dark:text-gray-300">
             {searchTerm ? `No results for "${searchTerm}"` : 'No employees available'}
           </p>
         </div>

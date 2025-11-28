@@ -38,7 +38,7 @@ const Tasks = ({ employees, setEmployees }) => {
     <div data-testid="tasks-page">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-4xl font-bold text-gray-900" data-testid="tasks-title">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white" data-testid="tasks-title">
             All Tasks
           </h1>
           <button
@@ -50,7 +50,7 @@ const Tasks = ({ employees, setEmployees }) => {
             Add Task
           </button>
         </div>
-        <p className="text-gray-600">View and manage all team tasks</p>
+        <p className="text-gray-600 dark:text-gray-300">View and manage all team tasks</p>
       </div>
 
       {/* Filters */}

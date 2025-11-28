@@ -13,7 +13,7 @@ const EmployeeDetail = ({ employees }) => {
   if (!employee) {
     return (
       <div className="text-center py-12" data-testid="employee-not-found">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Employee Not Found</h2>
+        <h2 className="text-2xl font-bold text-white dark:text-white mb-4">Employee Not Found</h2>
         <Link to="/employees" className="btn btn-primary">
           <ArrowLeft className="w-4 h-4" />
           Back to Employees
@@ -32,7 +32,7 @@ const EmployeeDetail = ({ employees }) => {
       <Link
         to="/employees"
         data-testid="back-to-employees"
-        className="inline-flex items-center gap-2 text-primary-500 hover:text-primary-600 mb-6 font-medium transition-colors"
+        className="inline-flex items-center gap-2 text-primary-400 hover:text-primary-300 mb-6 font-medium transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Employees
@@ -41,34 +41,34 @@ const EmployeeDetail = ({ employees }) => {
       {/* Employee Info Card */}
       <div className="card mb-8">
         <div className="flex items-start gap-6">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center flex-shrink-0">
-            <User className="w-10 h-10 text-primary-700" />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-500/20 dark:to-primary-600/20 flex items-center justify-center flex-shrink-0">
+            <User className="w-10 h-10 text-primary-700 dark:text-primary-400" />
           </div>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2" data-testid="employee-detail-name">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2" data-testid="employee-detail-name">
               {employee.name}
             </h1>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                 <Briefcase className="w-5 h-5" />
                 <span data-testid="employee-detail-role">{employee.role}</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                 <Mail className="w-5 h-5" />
                 <span>{employee.name.toLowerCase().replace(' ', '.')}@company.com</span>
               </div>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-bold text-gray-900" data-testid="employee-detail-task-count">{employee.tasks.length}</p>
-            <p className="text-sm text-gray-600">Total Tasks</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white" data-testid="employee-detail-task-count">{employee.tasks.length}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Total Tasks</p>
           </div>
         </div>
       </div>
 
       {/* Tasks Section */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Tasks</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Tasks</h2>
         
         {/* Filters */}
         <div className="mb-6">
@@ -84,7 +84,7 @@ const EmployeeDetail = ({ employees }) => {
           </div>
         ) : (
           <div className="card text-center py-12" data-testid="no-tasks-message">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               {filter === 'All'
                 ? 'No tasks assigned to this employee'
                 : `No ${filter.toLowerCase()} tasks`}

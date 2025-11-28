@@ -28,27 +28,27 @@ const TaskForm = ({ employees, onSubmit, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" data-testid="task-form-modal">
-      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 animate-in">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 max-w-md w-full p-6 animate-in">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 font-heading">Add New Task</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-heading">Add New Task</h2>
           <button
             onClick={onClose}
             data-testid="close-task-form"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-300" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm" data-testid="form-error">
+            <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm" data-testid="form-error">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Task Title *
             </label>
             <input
@@ -66,7 +66,7 @@ const TaskForm = ({ employees, onSubmit, onClose }) => {
           </div>
 
           <div>
-            <label htmlFor="employee" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="employee" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Assign To *
             </label>
             <select
@@ -85,7 +85,7 @@ const TaskForm = ({ employees, onSubmit, onClose }) => {
           </div>
 
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Status
             </label>
             <select
