@@ -346,9 +346,6 @@ curl -X POST http://localhost:5000/api/employees \
 - **Build Command**: `yarn build`
 - **Publish Directory**: `dist`
 
-### Backend Deployment (Optional)
-- **Platform**: Render / Railway / Heroku
-- **Database**: SQLite (file-based) or migrate to PostgreSQL for production
 
 ---
 
