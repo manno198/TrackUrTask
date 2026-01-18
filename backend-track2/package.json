@@ -1,7 +1,7 @@
 {
   "name": "backend-track2",
   "version": "1.0.0",
-  "description": "ProU Employee Task Tracker - Backend API",
+  "description": "TrackUrTask Employee Task Tracker - Backend API",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

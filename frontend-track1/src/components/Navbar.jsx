@@ -26,7 +26,7 @@ const Navbar = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
                 <CheckSquare className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white font-heading">ProU Tracker</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white font-heading">TrackUrTask Tracker</span>
             </Link>
           </div>
 

@@ -24,7 +24,7 @@ app.use(logger);
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'ProU Employee Task Tracker API',
+    message: 'TrackUrTask Employee Task Tracker API',
     version: '1.0.0',
   });
 });

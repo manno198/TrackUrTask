@@ -5,7 +5,7 @@
 1. **Open Postman** (download from https://www.postman.com/downloads/)
 
 2. **Create Collection**:
-   - Click "Collections" → "+" → Name: "ProU Task Tracker API"
+   - Click "Collections" → "+" → Name: "TrackUrTask Task Tracker API"
 
 3. **Set Base URL Variable**:
    - Right-click collection → "Edit" → "Variables" tab
@@ -15,7 +15,7 @@
 
 5. **Export Collection**:
    - Right-click collection → "Export" → "Collection v2.1"
-   - Save as: `ProU_API_Collection.json` in this folder
+   - Save as: `TrackUrTask_API_Collection.json` in this folder
 
 ## Endpoints to Add
 

@@ -1,10 +1,10 @@
-# ProU Employee Task Tracker - Internship Assessment
+# TrackUrTask Employee Task Tracker - Internship Assessment
 
 ## Project Overview
 
-This repository contains the complete solution for **ProU Technology Internship Coding Challenge**, implementing both **Track 1 (Frontend)** and **Track 2 (Backend)** as separate, independent projects.
+This repository contains the complete solution for **TrackUrTask Technology Internship Coding Challenge**, implementing both **Track 1 (Frontend)** and **Track 2 (Backend)** as separate, independent projects.
 
-### Track 1: Frontend (Mock Data) [https://prouhs.netlify.app/]
+### Track 1: Frontend (Mock Data) [https://TrackUrTaskhs.netlify.app/]
 A modern, responsive React Single Page Application (SPA) that manages employee tasks using **mock JSON data only**. The frontend operates independently without any backend API integration, demonstrating component-based architecture, state management, and modern UI/UX practices.
 
 ### Track 2: Backend (API + Database)
@@ -15,7 +15,7 @@ A fully functional RESTful API built with Node.js and Express.js, providing CRUD
 ## 🏗️ Project Structure & Architecture
 
 ```
-proU-assignment/
+TrackUrTask-assignment/
 ├── frontend-track1/          # Track 1: Frontend SPA (React + Vite)
 │   ├── src/
 │   │   ├── components/       # Reusable UI components
@@ -65,7 +65,7 @@ proU-assignment/
 │   │   ├── app.js            # Express app configuration
 │   │   └── server.js         # Server entry point
 │   ├── postman/
-│   │   └── ProU_API_Collection.json  # Postman collection for testing
+│   │   └── TrackUrTask_API_Collection.json  # Postman collection for testing
 │   ├── seed.js               # Database seeder script
 │   ├── database.sqlite       # SQLite database (auto-created)
 │   ├── package.json
@@ -168,7 +168,7 @@ proU-assignment/
    - **API Endpoint**: `http://localhost:5000/api`
 
 6. **Test the API:**
-   - Use Postman collection: `backend-track2/postman/ProU_API_Collection.json`
+   - Use Postman collection: `backend-track2/postman/TrackUrTask_API_Collection.json`
    - Or use curl commands (see API Endpoints section below)
 
 ---
@@ -239,7 +239,7 @@ DELETE /api/tasks/:id              # Delete task (Protected - requires JWT)
 ```
 
 ### Testing with Postman
-1. Import `backend-track2/postman/ProU_API_Collection.json` into Postman
+1. Import `backend-track2/postman/TrackUrTask_API_Collection.json` into Postman
 2. Set collection variable `baseUrl` = `http://localhost:5000`
 3. Run "Login" request to get token
 4. Update `token` variable in collection
@@ -335,14 +335,14 @@ curl -X POST http://localhost:5000/api/employees \
 
 - **Frontend README**: `frontend-track1/README.md` - Detailed frontend documentation
 - **Backend README**: `backend-track2/README.md` - Detailed backend API documentation
-- **Postman Collection**: `backend-track2/postman/ProU_API_Collection.json` - Import into Postman for testing
+- **Postman Collection**: `backend-track2/postman/TrackUrTask_API_Collection.json` - Import into Postman for testing
 
 ---
 
 ## Deployment
 
 ### Frontend Deployment (Netlify)
-- **Live Demo**: [https://prouhs.netlify.app/]
+- **Live Demo**: [https://TrackUrTaskhs.netlify.app/]
 - **Build Command**: `yarn build`
 - **Publish Directory**: `dist`
 
@@ -358,13 +358,13 @@ Build with ❤️ By Harshita Singh
 
 ## License
 
-This project is created for ProU Technology Internship Assessment purposes.
+This project is created for TrackUrTask Technology Internship Assessment purposes.
 
 ---
 
 ## 🙏 Acknowledgments
 
-- ProU Technology for the internship opportunity
+- TrackUrTask Technology for the internship opportunity
 - React, Express, and open-source community for excellent tools and documentation
 
 
