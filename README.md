@@ -1,13 +1,5 @@
-# TrackUrTask Employee Task Tracker - Internship Assessment
+# TrackUrTask Employee Task Tracker 
 
-## Project Overview
-
-This repository contains the complete solution for **TrackUrTask Technology Internship Coding Challenge**, implementing both **Track 1 (Frontend)** and **Track 2 (Backend)** as separate, independent projects.
-
-### Track 1: Frontend (Mock Data) [https://TrackUrTaskhs.netlify.app/]
-A modern, responsive React Single Page Application (SPA) that manages employee tasks using **mock JSON data only**. The frontend operates independently without any backend API integration, demonstrating component-based architecture, state management, and modern UI/UX practices.
-
-### Track 2: Backend (API + Database)
 A fully functional RESTful API built with Node.js and Express.js, providing CRUD operations for Employees and Tasks. The backend uses **SQLite database** with Sequelize ORM, ensuring easy setup without external database dependencies. Includes JWT authentication for protected routes.
 
 ---
@@ -354,17 +346,12 @@ Build with ❤️ By Harshita Singh
 - **Email**: [sharshitaa3@gmail.com]
 
 
----
 
-## License
-
-This project is created for TrackUrTask Technology Internship Assessment purposes.
 
 ---
 
 ## 🙏 Acknowledgments
 
-- TrackUrTask Technology for the internship opportunity
 - React, Express, and open-source community for excellent tools and documentation
 
 
