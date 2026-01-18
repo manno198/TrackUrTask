@@ -257,7 +257,8 @@ curl -X POST http://localhost:5000/api/employees \
 ---
 
 
-<img width="1673" height="861" alt="Screenshot 2025-11-28 223759" src="https://github.com/user-attachments/assets/7089dc3a-5f16-41b6-b03d-91c3128c2137" />
+<img width="1736" height="844" alt="Screenshot 2026-01-19 032711" src="https://github.com/user-attachments/assets/2f4d7b44-142e-4cec-bfa7-b2389002c44f" />
+
 
 
 ### Frontend Screenshots
@@ -327,7 +328,7 @@ curl -X POST http://localhost:5000/api/employees \
 ## Deployment
 
 ### Frontend Deployment (Netlify)
-- **Live Demo**: [https://TrackUrTaskhs.netlify.app/]
+- **Live Demo**: [https://hstrackurtasks.netlify.app/]
 - **Build Command**: `yarn build`
 - **Publish Directory**: `dist`
 
