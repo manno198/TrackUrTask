@@ -302,9 +302,9 @@ curl -X POST http://localhost:5000/api/employees \
 
 ---
 
-## Bonus Features Implemented
+## Features 
 
-### Frontend (Track 1)
+### Frontend 
 - ✅ **LocalStorage Persistence**: Tasks added by users persist after page refresh
 - ✅ **Employee Search**: Search employees by name or role
 - ✅ **Task Filtering**: Filter tasks by status (All, Pending, In Progress, Completed)
@@ -312,7 +312,7 @@ curl -X POST http://localhost:5000/api/employees \
 - ✅ **Modern UI**: Custom color palette (coral/green), rounded corners, smooth animations
 - ✅ **Dashboard Analytics**: Visual progress bars and task breakdown statistics
 
-### Backend (Track 2)
+### Backend 
 - ✅ **JWT Authentication**: Secure authentication for protected routes
 - ✅ **Request Logging**: Middleware for logging all API requests with status codes
 - ✅ **Error Handling**: Comprehensive error handling with appropriate HTTP status codes
@@ -321,13 +321,6 @@ curl -X POST http://localhost:5000/api/employees \
 - ✅ **Database Seeder**: Automated seed script for sample data
 - ✅ **SQLite Integration**: No external database setup required
 
----
-
-## Additional Documentation
-
-- **Frontend README**: `frontend-track1/README.md` - Detailed frontend documentation
-- **Backend README**: `backend-track2/README.md` - Detailed backend API documentation
-- **Postman Collection**: `backend-track2/postman/TrackUrTask_API_Collection.json` - Import into Postman for testing
 
 ---
 
