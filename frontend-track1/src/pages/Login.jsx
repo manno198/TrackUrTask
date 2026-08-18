@@ -112,6 +112,28 @@ const Login = () => {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
+
+          <div className="mt-6 pt-5 border-t-2 border-ink/10">
+            <p className="eyebrow text-ink/50 mb-2">Demo Access</p>
+            <p className="text-sm text-ink/70 mb-3">
+              Reviewing this project? Use the demo admin account:
+            </p>
+            <div className="bg-ink/5 rounded-lg px-4 py-3 text-sm font-mono mb-3 space-y-1">
+              <div><span className="text-ink/50">email:</span> admin@company.com</div>
+              <div><span className="text-ink/50">password:</span> TrackUr2026Demo!</div>
+            </div>
+            <button
+              type="button"
+              data-testid="login-fill-demo-button"
+              onClick={() => {
+                setEmail('admin@company.com');
+                setPassword('TrackUr2026Demo!');
+              }}
+              className="btn btn-secondary w-full"
+            >
+              Fill demo credentials
+            </button>
+          </div>
         </div>
       </div>
     </div>

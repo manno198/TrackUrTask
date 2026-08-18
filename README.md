@@ -4,6 +4,15 @@ A full-stack employee task tracking application: a React/Vite single-page fronte
 
 ---
 
+## Live Demo
+
+**Frontend:** http://trackurtask-frontend-903797724213.s3-website.ap-south-1.amazonaws.com
+**Backend health check:** http://3.108.249.124/health
+
+Demo admin login is shown directly on the app's sign-in page (also documented under [Security Considerations](#security-considerations) below).
+
+---
+
 ## Overview
 
 TrackUrTask lets a team manage employees and the tasks assigned to them: create/update/delete employees, assign and track tasks by status and priority, and view aggregate workload/dashboard statistics. Read access to employee and task listings is public; creating, updating, and deleting tasks and employees requires an authenticated (JWT) session.
@@ -172,30 +181,33 @@ Change `SEED_ADMIN_PASSWORD` from its default before seeding any non-local envir
 
 ---
 
-## Production Deployment Architecture (planned)
+## Production Deployment Architecture (currently live)
 
-The intended AWS deployment (not yet provisioned):
+Deployed on AWS (`ap-south-1` / Mumbai):
 
 ```
-                 ┌─────────────────────┐
-   Browser  ───▶ │ CloudFront + S3      │  React static build (frontend-track1/dist)
-                 └──────────┬───────────┘
-                            │  HTTPS (VITE_API_URL)
+                 ┌───────────────────────────┐
+   Browser  ───▶ │ S3 Static Website Hosting  │  React production build (frontend-track1/dist)
+                 └──────────┬─────────────────┘
+                            │  HTTP (VITE_API_URL — see note below)
                             ▼
-                 ┌─────────────────────┐
-                 │ EC2 (Node/Express)   │  PM2-managed API process (ecosystem.config.js)
-                 └──────────┬───────────┘
+                 ┌───────────────────────────┐
+                 │ EC2 + Nginx reverse proxy  │  proxies :80 → Express on :5000
+                 │ (PM2-managed API process)  │
+                 └──────────┬─────────────────┘
                             │
                             ▼
-                 ┌─────────────────────┐
-                 │ RDS (PostgreSQL)     │  DB_SSL=true, private subnet
-                 └─────────────────────┘
+                 ┌───────────────────────────┐
+                 │ RDS PostgreSQL              │  DB_SSL=true, security group restricted
+                 │                              │  to the EC2 instance only (never public)
+                 └───────────────────────────┘
 ```
 
-- **S3 + CloudFront** serve the Vite production build; `VITE_API_URL` is baked in at build time to point at the EC2 API.
-- **EC2** runs the Express API under **PM2** (`pm2 start ecosystem.config.js`), reading configuration from environment variables (never hardcoded).
-- **RDS PostgreSQL** is the production database, reached over `DATABASE_URL` with `DB_SSL=true`.
-- No AWS resources have been created yet — this section describes the target architecture for the next phase.
+- **S3** hosts the Vite production build as a public static website (bucket: `trackurtask-frontend-903797724213`); `VITE_API_URL` is baked in at build time to point at the EC2 API.
+- **EC2** runs the Express API under **PM2** (`pm2 start ecosystem.config.js`) behind an **Nginx** reverse proxy on port 80 → `localhost:5000`; configuration comes entirely from environment variables (never hardcoded). Port 5000 is not exposed to the internet — only Nginx on 80 is.
+- **RDS PostgreSQL** is the production database, reached over `DATABASE_URL` with `DB_SSL=true`. Its security group only allows inbound traffic from the EC2 instance's security group — never `0.0.0.0/0`.
+
+**Why S3 static hosting instead of CloudFront:** the original design puts CloudFront (with Origin Access Control) in front of S3 as the single HTTPS entry point, also proxying `/api/*` to EC2 so the frontend and API share one HTTPS origin. CloudFront distribution creation is currently blocked on this AWS account pending AWS's own account verification process, so the site is temporarily served directly via **S3 static website hosting** (plain HTTP, publicly readable bucket — there's no auth mechanism for S3 website endpoints). Since both the frontend and the API are HTTP-only in this interim setup, there's no mixed-content issue; CORS is restricted via `FRONTEND_URL`/`CORS_ORIGINS` to just the S3 website origin. Once CloudFront is available, the plan is to switch back to the CloudFront + OAC design (S3 bucket private again, HTTPS end-to-end, custom domain optional).
 
 ---
 
@@ -207,7 +219,10 @@ The intended AWS deployment (not yet provisioned):
 - All secrets (`DATABASE_URL`, `JWT_SECRET`, seed admin credentials) are supplied via environment variables, never committed — `.env` is gitignored and only `.env.example` placeholders are tracked.
 - Server-side input validation on all write endpoints (`src/middleware/validators.js`).
 - `/health` avoids leaking internal error details; only reports `ok`/`error` + DB connectivity.
-- In production, terminate TLS in front of the API (e.g. via a load balancer/CloudFront) and set `DB_SSL=true` for encrypted connections to RDS.
+- RDS is not publicly accessible; its security group only trusts the EC2 instance's security group on port 5432.
+- **Interim deployment trade-off:** the current S3 static-website hosting setup (see architecture above) serves the frontend over plain HTTP with a public bucket, since it's a stopgap for a CloudFront-blocked AWS account. Its own JS bundle intentionally publishes demo admin credentials on the sign-in page for reviewer convenience — this is only appropriate for a demo deployment seeded with sample data, never for an app holding real user data.
+- **Demo login:** `admin@company.com` / `TrackUr2026Demo!` (also shown on the deployed sign-in page) — this is seed data for demo/review purposes only.
+- In production (once CloudFront/HTTPS is in place), terminate TLS in front of the API as well and keep `DB_SSL=true` for encrypted connections to RDS.
 
 ---
 
