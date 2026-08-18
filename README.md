@@ -1,15 +1,34 @@
 # TrackUrTask — Employee Task Tracker
 
-A full-stack employee task tracking application: a React/Vite single-page frontend backed by a Node/Express REST API with PostgreSQL persistence and JWT authentication.
+A full-stack employee task tracking app: React/Vite frontend, Node/Express REST API, PostgreSQL database, JWT authentication — built and deployed end-to-end on AWS.
+
+**Live:** [Frontend](http://trackurtask-frontend-903797724213.s3-website.ap-south-1.amazonaws.com) · [API Health Check](http://3.108.249.124/health) · Demo login is shown directly on the sign-in page
 
 ---
 
-## Live Demo
+## Skills Demonstrated
 
-**Frontend:** http://trackurtask-frontend-903797724213.s3-website.ap-south-1.amazonaws.com
-**Backend health check:** http://3.108.249.124/health
+**React.js (Frontend)** — Full single-page app built with React 18 + Vite: React Router for navigation, Context API for auth/session state, protected routes, and a real Axios-based API client (not mock data). Styled with Tailwind CSS.
 
-Demo admin login is shown directly on the app's sign-in page (also documented under [Security Considerations](#security-considerations) below).
+**Node.js (Backend/API)** — REST API built with Express + Sequelize on PostgreSQL: JWT authentication, request validation, error handling, versioned database migrations, and automated tests (Node's built-in test runner + Supertest).
+
+**AWS (Deployment)** — Actually deployed and running, not just configured on paper: EC2 (Nginx + PM2-managed Node process), RDS PostgreSQL, and S3, wired together and secured via the AWS CLI (security groups, IAM, static site hosting).
+
+---
+
+## AWS Deployment
+
+**S3 + EC2 + RDS — deployed and live** in `ap-south-1` (Mumbai):
+
+```
+S3 (React frontend)  →  EC2 + Nginx + PM2 (Node/Express API)  →  RDS (PostgreSQL)
+```
+
+- **S3** serves the built React app as a static website
+- **EC2** runs the Node/Express API under PM2, behind an Nginx reverse proxy
+- **RDS** is a managed PostgreSQL instance, not publicly accessible — only the EC2 instance can reach it
+
+Full architecture notes, security-group details, and known trade-offs of this setup are in [Deployment Details](#deployment-details) further down.
 
 ---
 
@@ -19,7 +38,7 @@ TrackUrTask lets a team manage employees and the tasks assigned to them: create/
 
 ---
 
-## Architecture
+## Project Structure
 
 ```
 TrackUrTask/
@@ -47,19 +66,6 @@ TrackUrTask/
     ├── ecosystem.config.js  PM2 process configuration
     └── docker-compose.yml   Local Postgres for development
 ```
-
-**Frontend**
-- React 18 + Vite 5, React Router for client-side routing
-- Tailwind CSS for styling
-- `AuthContext` holds the JWT and gates the app behind `ProtectedRoute`; `/login` is the only public route
-- API calls go through a single Axios instance (`src/services/api.js`) whose base URL is `VITE_API_URL`
-
-**Backend**
-- Express REST API, MVC-style (routes → controllers → Sequelize models)
-- PostgreSQL via Sequelize ORM, schema managed by Sequelize CLI migrations (no `sync()` in production)
-- JWT authentication: `POST /api/auth/login` issues a token; `protect` middleware guards writes
-- CORS is allow-listed from `FRONTEND_URL` / `CORS_ORIGINS` env vars — never wildcards
-- `/health` reports API + database connectivity for load balancer health checks
 
 ---
 
@@ -181,17 +187,18 @@ Change `SEED_ADMIN_PASSWORD` from its default before seeding any non-local envir
 
 ---
 
-## Production Deployment Architecture
+## Deployment Details
 
-### Current (live): S3 → EC2 → RDS
+<details>
+<summary>Full architecture, security-group setup, and production trade-offs (click to expand)</summary>
 
-Deployed on AWS (`ap-south-1` / Mumbai):
+### Architecture
 
 ```
                  ┌───────────────────────────┐
    Browser  ───▶ │ S3 Static Website Hosting  │  React production build (frontend-track1/dist)
                  └──────────┬─────────────────┘
-                            │  HTTP (VITE_API_URL — see note below)
+                            │  HTTP (VITE_API_URL)
                             ▼
                  ┌───────────────────────────┐
                  │ EC2 + Nginx reverse proxy  │  proxies :80 → Express on :5000
@@ -209,24 +216,22 @@ Deployed on AWS (`ap-south-1` / Mumbai):
 - **EC2** runs the Express API under **PM2** (`pm2 start ecosystem.config.js`) behind an **Nginx** reverse proxy on port 80 → `localhost:5000`; configuration comes entirely from environment variables (never hardcoded). Port 5000 is not exposed to the internet — only Nginx on 80 is.
 - **RDS PostgreSQL** is the production database, reached over `DATABASE_URL` with `DB_SSL=true`. Its security group only allows inbound traffic from the EC2 instance's security group — never `0.0.0.0/0`.
 
-### Planned: CloudFront + S3 → EC2 → RDS
+### Frontend & Backend internals
 
-The target design fronts S3 (private, via Origin Access Control) and the EC2 API with a single CloudFront distribution as the HTTPS entry point, replacing the current plain-HTTP S3 website hosting. **Not deployed yet** — CloudFront distribution creation is currently blocked on this AWS account pending AWS's own account verification process. This is a temporary AWS-side restriction, not an architectural choice; the switch-over requires no application code changes, only AWS-side reconfiguration.
+- **Frontend**: React 18 + Vite 5, React Router for client-side routing, Tailwind CSS. `AuthContext` holds the JWT and gates the app behind `ProtectedRoute`; `/login` is the only public route. API calls go through a single Axios instance (`src/services/api.js`) whose base URL is `VITE_API_URL`.
+- **Backend**: Express REST API, MVC-style (routes → controllers → Sequelize models). PostgreSQL via Sequelize ORM, schema managed by Sequelize CLI migrations (no `sync()` in production). JWT authentication: `POST /api/auth/login` issues a token; `protect` middleware guards writes. CORS is allow-listed from `FRONTEND_URL` / `CORS_ORIGINS` env vars — never wildcards. `/health` reports API + database connectivity.
 
----
-
-## Security Considerations
+### Security notes & known trade-offs
 
 - Passwords hashed with bcrypt; JWTs signed with a required, non-default `JWT_SECRET`.
-- CORS is an explicit allow-list (`FRONTEND_URL` + `CORS_ORIGINS`); it never falls back to `*`.
-- Write endpoints (create/update/delete) require a valid JWT via the `protect` middleware.
-- All secrets (`DATABASE_URL`, `JWT_SECRET`, seed admin credentials) are supplied via environment variables, never committed — `.env` is gitignored and only `.env.example` placeholders are tracked.
-- Server-side input validation on all write endpoints (`src/middleware/validators.js`).
-- `/health` avoids leaking internal error details; only reports `ok`/`error` + DB connectivity.
+- Write endpoints (create/update/delete) require a valid JWT via the `protect` middleware, with server-side input validation on every write.
+- All secrets (`DATABASE_URL`, `JWT_SECRET`, seed admin credentials) are supplied via environment variables, never committed — `.env` is gitignored, only `.env.example` placeholders are tracked.
 - RDS is not publicly accessible; its security group only trusts the EC2 instance's security group on port 5432.
-- **Interim deployment trade-off:** the current S3 static-website hosting setup (see architecture above) serves the frontend over plain HTTP with a public bucket, since it's a stopgap for a CloudFront-blocked AWS account. Its own JS bundle intentionally publishes demo admin credentials on the sign-in page for reviewer convenience — this is only appropriate for a demo deployment seeded with sample data, never for an app holding real user data.
-- **Demo login:** shown directly on the deployed sign-in page — this is seed data for demo/review purposes only.
-- In production (once CloudFront/HTTPS is in place), terminate TLS in front of the API as well and keep `DB_SSL=true` for encrypted connections to RDS.
+- `/health` avoids leaking internal error details; only reports `ok`/`error` + DB connectivity.
+- **Interim trade-off:** the frontend is currently served via S3 static website hosting over plain HTTP with a public bucket (S3 website endpoints have no auth mechanism). That's an acceptable trade-off for this demo deployment (seed data only, no real user data) but not how this would be set up for an app handling real user data — the next step would be putting a CDN with HTTPS and a private, access-controlled origin bucket in front of it.
+- Demo admin login is intentionally shown on the deployed sign-in page for reviewer convenience — again, only appropriate because this is seed/demo data.
+
+</details>
 
 ---
 
