@@ -3,41 +3,49 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-gray-200 dark:border-gray-700;
+  html {
+    overflow-y: scroll;
   }
-  
+
   body {
-    @apply bg-gray-50 text-gray-900 font-body dark:bg-gray-900 dark:text-white;
+    @apply bg-chartreuse-100 text-ink font-sans;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
+    @apply font-heading font-extrabold tracking-tight text-ink;
   }
 }
 
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center gap-2;
+    @apply px-5 py-2.5 rounded-lg font-bold uppercase text-sm tracking-wide transition-all duration-150 inline-flex items-center justify-center gap-2 border-[3px] border-ink;
   }
-  
+
   .btn-primary {
-    @apply bg-primary-500 text-white hover:bg-primary-600 hover:shadow-lg hover:scale-105;
+    @apply bg-ink text-chartreuse hover:shadow-block hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none;
   }
-  
+
   .btn-secondary {
-    @apply bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 hover:shadow-md;
+    @apply bg-white text-ink hover:bg-chartreuse-100;
   }
-  
+
+  .btn-danger {
+    @apply bg-white text-red-600 border-red-600 hover:bg-red-50;
+  }
+
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-200 hover:shadow-xl;
+    @apply bg-white rounded-xl border-[3px] border-ink p-6;
   }
-  
+
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+    @apply w-full px-4 py-2.5 rounded-lg border-[3px] border-ink bg-white text-ink font-sans placeholder:text-ink/40 focus:outline-none focus:border-electric focus:shadow-block-electric transition-all;
   }
-  
+
   .badge {
-    @apply px-3 py-1 rounded-lg text-xs font-medium;
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold font-mono uppercase tracking-wide border-2 border-ink;
+  }
+
+  .eyebrow {
+    @apply text-xs font-mono font-bold uppercase tracking-widest;
   }
 }

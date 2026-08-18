@@ -3,6 +3,8 @@ const cors = require('cors');
 const logger = require('./middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
 const { login } = require('./middleware/auth');
+const { validateLogin } = require('./middleware/validators');
+const { sequelize } = require('./config/db');
 
 const app = express();
 
@@ -10,9 +12,16 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS
+// CORS — only the deployed frontend (and any extra origins listed in
+// CORS_ORIGINS, e.g. for local dev) are allowed. Never falls back to '*':
+// an unset origin means "allow nothing" rather than "allow everything."
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : []),
+].filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : '*',
+  origin: allowedOrigins,
   credentials: true,
 };
 app.use(cors(corsOptions));
@@ -29,12 +38,23 @@ app.get('/', (req, res) => {
   });
 });
 
+// Health check (for load balancers)
+app.get('/health', async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    res.status(200).json({ status: 'ok', db: 'connected' });
+  } catch (error) {
+    res.status(503).json({ status: 'error', db: 'disconnected' });
+  }
+});
+
 // Auth route (bonus feature)
-app.post('/api/auth/login', login);
+app.post('/api/auth/login', validateLogin, login);
 
 // API Routes
 app.use('/api/employees', require('./routes/employeeRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
+app.use('/api/stats', require('./routes/statsRoutes'));
 
 // Error handler (must be last)
 app.use(errorHandler);

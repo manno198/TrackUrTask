@@ -7,7 +7,38 @@
 	},
 	"item": [
 		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Login (Auth)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const body = pm.response.json();",
+							"if (body && body.token) {",
+							"    pm.collectionVariables.set('token', body.token);",
+							"}"
+						]
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -29,6 +60,26 @@
 						"api",
 						"auth",
 						"login"
+					]
+				}
+			},
+			"response": [],
+			"description": "Logging in here automatically stores the returned JWT in the `token` collection variable (see the Tests script), so every Protected request below just works without any manual copy-paste."
+		},
+		{
+			"name": "Dashboard Stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/stats/dashboard",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"stats",
+						"dashboard"
 					]
 				}
 			},
@@ -72,10 +123,15 @@
 			"response": []
 		},
 		{
-			"name": "Create Employee",
+			"name": "Create Employee (Protected)",
 			"request": {
 				"method": "POST",
 				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
 					{
 						"key": "Content-Type",
 						"value": "application/json",
@@ -105,10 +161,15 @@
 			"response": []
 		},
 		{
-			"name": "Update Employee",
+			"name": "Update Employee (Protected)",
 			"request": {
 				"method": "PUT",
 				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
 					{
 						"key": "Content-Type",
 						"value": "application/json",
@@ -139,10 +200,16 @@
 			"response": []
 		},
 		{
-			"name": "Delete Employee",
+			"name": "Delete Employee (Protected)",
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "{{baseUrl}}/api/employees/1",
 					"host": [
@@ -248,6 +315,30 @@
 			"response": []
 		},
 		{
+			"name": "Get Tasks By Priority (High)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/tasks?priority=High",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"tasks"
+					],
+					"query": [
+						{
+							"key": "priority",
+							"value": "High"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Get Tasks By Employee",
 			"request": {
 				"method": "GET",
@@ -291,7 +382,7 @@
 			"response": []
 		},
 		{
-			"name": "Create Task",
+			"name": "Create Task (Protected)",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -329,7 +420,7 @@
 			"response": []
 		},
 		{
-			"name": "Update Task",
+			"name": "Update Task (Protected)",
 			"request": {
 				"method": "PUT",
 				"header": [
@@ -368,7 +459,7 @@
 			"response": []
 		},
 		{
-			"name": "Delete Task",
+			"name": "Delete Task (Protected)",
 			"request": {
 				"method": "DELETE",
 				"header": [

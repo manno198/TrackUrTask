@@ -1,15 +1,27 @@
 require('dotenv').config();
+const bcrypt = require('bcryptjs');
 const { connectDB, sequelize } = require('./src/config/db');
-const { Employee, Task } = require('./src/models');
+const { Employee, Task, User } = require('./src/models');
 
 const seedDatabase = async () => {
   try {
-    // Connect to database
     await connectDB();
 
-    // Clear existing data (force sync)
-    await sequelize.sync({ force: true });
+    try {
+      await sequelize.query('TRUNCATE TABLE tasks, employees, users RESTART IDENTITY CASCADE');
+    } catch (error) {
+      console.error(
+        '\x1b[31mCould not truncate tables — have migrations been run yet? Try `npm run migrate` first.\x1b[0m'
+      );
+      throw error;
+    }
     console.log('Cleared existing data');
+
+    const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@company.com';
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'admin123';
+    const passwordHash = await bcrypt.hash(adminPassword, 10);
+    await User.create({ email: adminEmail, password: passwordHash });
+    console.log('Created admin user');
 
     // Create employees
     const employees = await Employee.bulkCreate([
@@ -83,8 +95,8 @@ const seedDatabase = async () => {
 
     console.log('\x1b[32m%s\x1b[0m', '\n✓ Database seeded successfully!');
     console.log('\nTest credentials for authentication:');
-    console.log('Email: admin@company.com');
-    console.log('Password: admin123');
+    console.log(`Email: ${adminEmail}`);
+    console.log(`Password: ${adminPassword}`);
 
     process.exit(0);
   } catch (error) {

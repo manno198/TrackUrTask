@@ -1,50 +1,76 @@
 # Track 2: Backend API - Employee Task Tracker
 
 ## Overview
-REST API for managing employees and tasks with full CRUD operations, filtering, authentication, and MongoDB integration.
+REST API for managing employees and tasks with full CRUD operations, filtering, JWT authentication, and a PostgreSQL database via Sequelize.
 
 ## Tech Stack
 - **Runtime**: Node.js
 - **Framework**: Express.js
-- **Database**: SQLite with Sequelize ORM
-- **Authentication**: JWT (JSON Web Tokens)
-- **Validation**: Sequelize validators + validator.js
+- **Database**: PostgreSQL with Sequelize ORM (schema managed by `sequelize-cli` migrations)
+- **Authentication**: JWT (JSON Web Tokens) with bcrypt-hashed passwords
+- **Validation**: Sequelize model validators + a request-level validation middleware (`src/middleware/validators.js`), both built on `validator.js`
+- **Tests**: Node's built-in test runner (`node --test`) + `supertest`, run against a real Postgres test database
 
 ## Features
 ✅ RESTful API architecture
 ✅ Employee and Task CRUD operations
 ✅ One-to-Many relationship (Employee has many Tasks)
-✅ Filter tasks by status and employee
-✅ Input validation and error handling
+✅ Filter tasks by status, employee, and priority
+✅ Request-level input validation on every write endpoint, plus model-level validation
+✅ Standardized `{ success, data|error }` response shape, centralized error handling
 ✅ Request logging middleware
-✅ JWT authentication (bonus)
+✅ Real JWT authentication backed by a `User` table and bcrypt password hashing
+✅ `GET /health` for load balancer checks
 ✅ Seed script for sample data
 ✅ Proper HTTP status codes
 
 ## Installation
 
+Requires a local Postgres. The easiest path is Docker:
+
 ```bash
-# Install dependencies
+# 1. Start Postgres (create a `trackurtask_test` DB too — see below)
+docker compose up -d
+docker exec trackurtask-postgres psql -U trackurtask -d trackurtask -c "CREATE DATABASE trackurtask_test;"
+
+# 2. Install dependencies
 npm install
 
-# Create .env file
+# 3. Create .env file and fill in DATABASE_URL / JWT_SECRET (see .env.example)
 cp .env.example .env
 
-# Update .env file (optional - SQLite works without .env)
-# PORT=5000
-# JWT_SECRET=your_secret_key
+# 4. Create the schema
+npm run migrate
 
-# Seed database with sample data
+# 5. Seed sample data (creates the admin user + demo employees/tasks)
 npm run seed
 
-# Start server
+# 6. Start the server
 npm start
-
-# Or use nodemon for development
+# or, for development:
 npm run dev
 ```
 
+Without Docker, point `DATABASE_URL`/`DATABASE_URL_TEST` in `.env` at any
+Postgres instance you have (local install, another container, RDS) instead
+of running `docker compose up -d`; steps 2-6 are unchanged.
+
+## Tests
+
+```bash
+npm test
+```
+
+Runs against `DATABASE_URL_TEST` (a separate Postgres database from the one
+used for `npm run dev`/`npm run seed`) — the test suite drops and recreates
+its own tables on each run, so nothing you've seeded locally is affected.
+
 ## API Endpoints
+
+### Health
+```
+GET    /health                     - Liveness/DB connectivity check (for load balancers)
+```
 
 ### Authentication (Bonus)
 ```
@@ -57,9 +83,9 @@ Response: { "success": true, "token": "jwt_token" }
 ```
 GET    /api/employees              - List all employees
 GET    /api/employees/:id          - Get single employee with tasks
-POST   /api/employees              - Create employee
-PUT    /api/employees/:id          - Update employee
-DELETE /api/employees/:id          - Delete employee (and their tasks)
+POST   /api/employees              - Create employee (Protected - requires JWT)
+PUT    /api/employees/:id          - Update employee (Protected - requires JWT)
+DELETE /api/employees/:id          - Delete employee (Protected - requires JWT; also deletes their tasks)
 ```
 
 ### Tasks
@@ -71,6 +97,11 @@ GET    /api/tasks/:id              - Get single task
 POST   /api/tasks                  - Create task (Protected - requires JWT)
 PUT    /api/tasks/:id              - Update task (Protected - requires JWT)
 DELETE /api/tasks/:id              - Delete task (Protected - requires JWT)
+```
+
+### Stats
+```
+GET    /api/stats/dashboard        - Aggregate counts by status/priority, recent tasks, per-employee workload
 ```
 
 ## Request Examples
@@ -177,10 +208,13 @@ curl "http://localhost:5000/api/tasks?status=In%20Progress&employeeId=EMPLOYEE_I
 backend-track2/
 ├── src/
 │   ├── config/
-│   │   └── db.js                    # MongoDB connection
+│   │   ├── database.js              # sequelize-cli config (dev/test/production)
+│   │   └── db.js                    # Sequelize instance + connectDB()
+│   ├── migrations/                  # Versioned schema migrations (sequelize-cli)
 │   ├── models/
 │   │   ├── Employee.js              # Employee model
-│   │   └── Task.js                  # Task model
+│   │   ├── Task.js                  # Task model
+│   │   └── User.js                  # User model (auth)
 │   ├── controllers/
 │   │   ├── employeeController.js    # Employee business logic
 │   │   └── taskController.js        # Task business logic
@@ -188,12 +222,19 @@ backend-track2/
 │   │   ├── employeeRoutes.js        # Employee routes
 │   │   └── taskRoutes.js            # Task routes
 │   ├── middleware/
-│   │   ├── errorHandler.js          # Global error handler
+│   │   ├── errorHandler.js          # Centralized error handler
+│   │   ├── asyncHandler.js          # Wraps async route handlers
+│   │   ├── validators.js            # Request-level input validation
 │   │   ├── logger.js                # Request logger
-│   │   └── auth.js                  # JWT authentication
+│   │   └── auth.js                  # JWT authentication (login + protect)
+│   ├── utils/
+│   │   └── AppError.js              # statusCode-carrying error class
 │   ├── app.js                       # Express app setup
 │   └── server.js                    # Server entry point
+├── tests/                           # node:test + supertest integration tests
 ├── seed.js                          # Database seeder
+├── docker-compose.yml               # Local Postgres for development
+├── .sequelizerc
 ├── package.json
 ├── .env.example
 └── README.md
@@ -201,16 +242,13 @@ backend-track2/
 
 ## Testing
 
-Test using curl, Postman, or any API client:
-
-1. Start the server
-2. Run seed script to populate data
-3. Test endpoints with sample requests above
-4. For protected routes, first login to get JWT token
+Automated: `npm test` (see above). Manual: use curl, Postman, or any API
+client — start the server, run `npm run seed` to populate data, then hit
+the endpoints documented above (login first for protected routes).
 
 ## Notes
-- All protected routes (POST/PUT/DELETE tasks) require JWT authentication
-- Login credentials: `admin@company.com` / `admin123`
+- All protected routes (POST/PUT/DELETE tasks, POST/PUT/DELETE employees) require JWT authentication
+- Default seeded login credentials: `admin@company.com` / `admin123` (real bcrypt-hashed password in the `users` table, not hardcoded — override via `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD`)
 - Deleting an employee also deletes all their tasks
 - Email must be unique for each employee
 - Task status must be: Pending, In Progress, or Completed

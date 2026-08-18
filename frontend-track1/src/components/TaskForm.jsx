@@ -1,54 +1,82 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 
-const TaskForm = ({ employees, onSubmit, onClose }) => {
+const toDateInputValue = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+};
+
+const labelClass = 'block text-xs font-bold uppercase tracking-wide text-ink mb-2';
+
+const TaskForm = ({ employees, task, onSubmit, onClose }) => {
+  const isEdit = !!task;
   const [formData, setFormData] = useState({
-    title: '',
-    employeeId: employees[0]?.id || '',
-    status: 'Pending',
+    title: task?.title || '',
+    description: task?.description || '',
+    employeeId: task?.employeeId || employees[0]?.id || '',
+    status: task?.status || 'Pending',
+    priority: task?.priority || 'Medium',
+    dueDate: toDateInputValue(task?.dueDate),
   });
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) {
       setError('Task title is required');
       return;
     }
-    
+
     if (!formData.employeeId) {
       setError('Please select an employee');
       return;
     }
 
-    onSubmit(formData);
-    onClose();
+    setSubmitting(true);
+    setError('');
+    try {
+      await onSubmit({
+        ...formData,
+        employeeId: Number(formData.employeeId),
+        dueDate: formData.dueDate || null,
+      });
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Failed to save task');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" data-testid="task-form-modal">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 max-w-md w-full p-6 animate-in">
+    <div className="fixed inset-0 bg-ink/70 flex items-center justify-center z-50 p-4" data-testid="task-form-modal">
+      <div className="bg-white rounded-xl border-[3px] border-ink shadow-block max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-heading">Add New Task</h2>
+          <h2 className="text-2xl font-heading font-extrabold">
+            {isEdit ? 'Edit Task' : 'Add New Task'}
+          </h2>
           <button
             onClick={onClose}
             data-testid="close-task-form"
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-1.5 border-2 border-ink rounded-md hover:bg-chartreuse-100 transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-300" />
+            <X className="w-4 h-4 text-ink" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm" data-testid="form-error">
+            <div className="bg-red-50 border-2 border-red-500 text-red-700 px-4 py-3 rounded-lg text-sm font-medium" data-testid="form-error">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="title" className={labelClass}>
               Task Title *
             </label>
             <input
@@ -66,14 +94,29 @@ const TaskForm = ({ employees, onSubmit, onClose }) => {
           </div>
 
           <div>
-            <label htmlFor="employee" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="description" className={labelClass}>
+              Description
+            </label>
+            <textarea
+              id="description"
+              data-testid="task-description-input"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="input"
+              rows={3}
+              placeholder="Optional details"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="employee" className={labelClass}>
               Assign To *
             </label>
             <select
               id="employee"
               data-testid="task-employee-select"
               value={formData.employeeId}
-              onChange={(e) => setFormData({ ...formData, employeeId: parseInt(e.target.value) })}
+              onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
               className="input"
             >
               {employees.map((emp) => (
@@ -84,21 +127,54 @@ const TaskForm = ({ employees, onSubmit, onClose }) => {
             </select>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="status" className={labelClass}>
+                Status
+              </label>
+              <select
+                id="status"
+                data-testid="task-status-select"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="input"
+              >
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="priority" className={labelClass}>
+                Priority
+              </label>
+              <select
+                id="priority"
+                data-testid="task-priority-select"
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                className="input"
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Status
+            <label htmlFor="dueDate" className={labelClass}>
+              Due Date
             </label>
-            <select
-              id="status"
-              data-testid="task-status-select"
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            <input
+              type="date"
+              id="dueDate"
+              data-testid="task-duedate-input"
+              value={formData.dueDate}
+              onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
               className="input"
-            >
-              <option value="Pending">Pending</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-            </select>
+            />
           </div>
 
           <div className="flex gap-3 pt-4">
@@ -113,9 +189,10 @@ const TaskForm = ({ employees, onSubmit, onClose }) => {
             <button
               type="submit"
               data-testid="submit-task-button"
-              className="btn btn-primary flex-1"
+              disabled={submitting}
+              className="btn btn-primary flex-1 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Add Task
+              {submitting ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Task'}
             </button>
           </div>
         </form>

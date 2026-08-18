@@ -7,9 +7,15 @@ const {
   updateEmployee,
   deleteEmployee,
 } = require('../controllers/employeeController');
+const { protect } = require('../middleware/auth');
+const { validateEmployeeCreate, validateEmployeeUpdate } = require('../middleware/validators');
 
-router.route('/').get(getEmployees).post(createEmployee);
+router.route('/').get(getEmployees).post(protect, validateEmployeeCreate, createEmployee);
 
-router.route('/:id').get(getEmployee).put(updateEmployee).delete(deleteEmployee);
+router
+  .route('/:id')
+  .get(getEmployee)
+  .put(protect, validateEmployeeUpdate, updateEmployee)
+  .delete(protect, deleteEmployee);
 
 module.exports = router;

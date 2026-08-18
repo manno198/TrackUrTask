@@ -1,48 +1,104 @@
 import React from 'react';
-import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, ChevronDown, Pencil, Trash2 } from 'lucide-react';
 
-const TaskCard = ({ task, employeeName }) => {
-  const statusConfig = {
-    'Completed': {
-      color: 'bg-green-100 dark:bg-green-500/20 text-green-800 dark:text-green-400 border-green-200 dark:border-green-500/30',
-      icon: CheckCircle,
-    },
-    'In Progress': {
-      color: 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30',
-      icon: Clock,
-    },
-    'Pending': {
-      color: 'bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 border-red-200 dark:border-red-500/30',
-      icon: AlertCircle,
-    },
-  };
+const statusColor = {
+  Completed: 'bg-spring',
+  'In Progress': 'bg-electric',
+  Pending: 'bg-flash',
+};
 
-  const config = statusConfig[task.status] || statusConfig['Pending'];
-  const StatusIcon = config.icon;
+const priorityColor = {
+  High: 'bg-flash',
+  Medium: 'bg-electric',
+  Low: 'bg-spring',
+};
 
+const TaskCard = ({ task, employeeName, onStatusChange, onEdit, onDelete }) => {
   return (
-    <div className="card" data-testid={`task-card-${task.id}`}>
-      <div className="flex items-start justify-between mb-3">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-white flex-1" data-testid={`task-title-${task.id}`}>
+    <div className="card flex flex-col" data-testid={`task-card-${task.id}`}>
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <h3 className="text-base font-bold text-ink flex-1" data-testid={`task-title-${task.id}`}>
           {task.title}
         </h3>
-        <span
-          className={`badge ${config.color} border flex items-center gap-1 flex-shrink-0 ml-2 rounded-lg`}
-          data-testid={`task-status-${task.id}`}
-        >
-          <StatusIcon className="w-3 h-3" />
-          {task.status}
-        </span>
+        {task.priority && (
+          <span
+            className={`badge ${priorityColor[task.priority]} text-ink flex-shrink-0`}
+            data-testid={`task-priority-${task.id}`}
+          >
+            {task.priority}
+          </span>
+        )}
       </div>
-      
+
+      {task.description && (
+        <p className="text-sm text-ink/60 mb-3 line-clamp-2">{task.description}</p>
+      )}
+
+      <div className="flex items-center justify-between mb-3 mt-auto pt-1">
+        {onStatusChange ? (
+          <div className="relative">
+            <select
+              value={task.status}
+              onChange={(e) => onStatusChange(task.id, e.target.value)}
+              data-testid={`task-status-select-${task.id}`}
+              className={`badge ${statusColor[task.status]} text-ink cursor-pointer appearance-none pr-6`}
+            >
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+            <ChevronDown className="w-3 h-3 text-ink absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        ) : (
+          <span
+            className={`badge ${statusColor[task.status]} text-ink`}
+            data-testid={`task-status-${task.id}`}
+          >
+            {task.status}
+          </span>
+        )}
+
+        {task.dueDate && (
+          <span className="flex items-center gap-1 text-xs font-mono text-ink/50" data-testid={`task-duedate-${task.id}`}>
+            <Calendar className="w-3.5 h-3.5" />
+            {new Date(task.dueDate).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+
       {employeeName && (
-        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300" data-testid={`task-employee-${task.id}`}>
-          <div className="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-500/20 flex items-center justify-center">
-            <span className="text-xs font-medium text-primary-700 dark:text-primary-400">
+        <div className="flex items-center gap-2 text-sm text-ink mb-3" data-testid={`task-employee-${task.id}`}>
+          <div className="w-6 h-6 rounded-md bg-ink flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-bold text-chartreuse">
               {employeeName.charAt(0)}
             </span>
           </div>
-          <span>{employeeName}</span>
+          <span className="font-medium">{employeeName}</span>
+        </div>
+      )}
+
+      {(onEdit || onDelete) && (
+        <div className="flex gap-2 pt-3 border-t-2 border-ink/10">
+          {onEdit && (
+            <button
+              onClick={() => onEdit(task)}
+              data-testid={`task-edit-${task.id}`}
+              className="btn btn-secondary flex-1 py-1.5 text-xs"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Edit
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(task)}
+              data-testid={`task-delete-${task.id}`}
+              className="btn btn-danger flex-1 py-1.5 text-xs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete
+            </button>
+          )}
         </div>
       )}
     </div>

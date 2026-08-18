@@ -1,353 +1,220 @@
-# TrackUrTask Employee Task Tracker 
----
-https://hstrackurtasks.netlify.app/
----
-A fully functional RESTful API built with Node.js and Express.js, providing CRUD operations for Employees and Tasks. The backend uses **SQLite database** with Sequelize ORM, ensuring easy setup without external database dependencies. Includes JWT authentication for protected routes.
+# TrackUrTask — Employee Task Tracker
+
+A full-stack employee task tracking application: a React/Vite single-page frontend backed by a Node/Express REST API with PostgreSQL persistence and JWT authentication.
 
 ---
 
-## 🏗️ Project Structure & Architecture
+## Overview
+
+TrackUrTask lets a team manage employees and the tasks assigned to them: create/update/delete employees, assign and track tasks by status and priority, and view aggregate workload/dashboard statistics. Read access to employee and task listings is public; creating, updating, and deleting tasks and employees requires an authenticated (JWT) session.
+
+---
+
+## Architecture
 
 ```
-TrackUrTask-assignment/
-├── frontend-track1/          # Track 1: Frontend SPA (React + Vite)
-│   ├── src/
-│   │   ├── components/       # Reusable UI components
-│   │   │   ├── Layout.jsx
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── DashboardCard.jsx
-│   │   │   ├── EmployeeCard.jsx
-│   │   │   ├── TaskCard.jsx
-│   │   │   ├── TaskFilters.jsx
-│   │   │   ├── TaskForm.jsx
-│   │   │   └── TaskList.jsx
-│   │   ├── pages/            # Route pages
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── Employees.jsx
-│   │   │   ├── EmployeeDetail.jsx
-│   │   │   └── Tasks.jsx
-│   │   ├── data/
-│   │   │   └── mockData.js   # Mock JSON data
-│   │   ├── hooks/
-│   │   │   └── useLocalStorage.js  # Custom hook for persistence
-│   │   ├── App.jsx           # Main app component with routing
-│   │   ├── main.jsx          # Entry point
-│   │   └── index.css         # Global styles (Tailwind CSS)
-│   ├── public/
-│   │   └── _redirects        # Netlify redirect rules
-│   ├── package.json
-│   └── README.md
+TrackUrTask/
+├── frontend-track1/        React + Vite SPA
+│   └── src/
+│       ├── components/     UI components (cards, forms, layout, toasts, protected route)
+│       ├── contexts/       AuthContext (JWT session), ToastContext (notifications)
+│       ├── pages/          Login, Dashboard, Employees, EmployeeDetail, Tasks
+│       ├── services/       Axios API client (VITE_API_URL)
+│       └── utils/
 │
-├── backend-track2/           # Track 2: Backend API (Node.js + Express)
-│   ├── src/
-│   │   ├── config/
-│   │   │   └── db.js         # Database configuration (Sequelize)
-│   │   ├── models/           # Database models
-│   │   │   ├── Employee.js
-│   │   │   ├── Task.js
-│   │   │   └── index.js      # Model associations
-│   │   ├── controllers/      # Business logic
-│   │   │   ├── employeeController.js
-│   │   │   └── taskController.js
-│   │   ├── routes/           # API routes
-│   │   │   ├── employeeRoutes.js
-│   │   │   └── taskRoutes.js
-│   │   ├── middleware/       # Custom middleware
-│   │   │   ├── auth.js       # JWT authentication
-│   │   │   ├── errorHandler.js
-│   │   │   └── logger.js
-│   │   ├── app.js            # Express app configuration
-│   │   └── server.js         # Server entry point
-│   ├── postman/
-│   │   └── TrackUrTask_API_Collection.json  # Postman collection for testing
-│   ├── seed.js               # Database seeder script
-│   ├── database.sqlite       # SQLite database (auto-created)
-│   ├── package.json
-│   └── README.md
-│
-└── README.md                 # This file
+└── backend-track2/         Node + Express REST API
+    ├── src/
+    │   ├── app.js           Express app: middleware, CORS, routes, /health
+    │   ├── server.js        Entry point
+    │   ├── config/          Sequelize config (database.js) + connection (db.js)
+    │   ├── models/          Employee, Task, User (Sequelize)
+    │   ├── migrations/      Sequelize CLI migrations (employees, users, tasks)
+    │   ├── controllers/     employee, task, stats
+    │   ├── routes/          employeeRoutes, taskRoutes, statsRoutes
+    │   ├── middleware/      auth (JWT), validators, errorHandler, asyncHandler, logger
+    │   └── utils/           AppError
+    ├── tests/               node:test + supertest integration tests
+    ├── seed.js              Seeds an admin user, employees, and tasks
+    ├── ecosystem.config.js  PM2 process configuration
+    └── docker-compose.yml   Local Postgres for development
 ```
 
-### Architecture Overview
+**Frontend**
+- React 18 + Vite 5, React Router for client-side routing
+- Tailwind CSS for styling
+- `AuthContext` holds the JWT and gates the app behind `ProtectedRoute`; `/login` is the only public route
+- API calls go through a single Axios instance (`src/services/api.js`) whose base URL is `VITE_API_URL`
 
-**Frontend Architecture:**
-- **Component-Based**: Modular React components for reusability
-- **State Management**: React hooks (useState, useEffect) + custom useLocalStorage hook
-- **Routing**: React Router DOM for SPA navigation
-- **Styling**: Tailwind CSS for responsive, utility-first styling
-- **Data Layer**: Local mock data with localStorage persistence
-
-**Backend Architecture:**
-- **MVC Pattern**: Models, Controllers, Routes separation
-- **ORM**: Sequelize for database operations
-- **Middleware**: Authentication, error handling, logging
-- **RESTful API**: Standard HTTP methods and status codes
-- **Database**: SQLite (file-based, no external setup needed)
+**Backend**
+- Express REST API, MVC-style (routes → controllers → Sequelize models)
+- PostgreSQL via Sequelize ORM, schema managed by Sequelize CLI migrations (no `sync()` in production)
+- JWT authentication: `POST /api/auth/login` issues a token; `protect` middleware guards writes
+- CORS is allow-listed from `FRONTEND_URL` / `CORS_ORIGINS` env vars — never wildcards
+- `/health` reports API + database connectivity for load balancer health checks
 
 ---
 
-## Setup Steps
+## API
 
-### Prerequisites
-- **Node.js** (v16 or higher)
-- **Yarn** or **npm** package manager
-- **Git** (for cloning repository)
+Base path: `/api`
 
----
-
-### Frontend Setup (Track 1)
-
-1. **Navigate to frontend directory:**
-   ```bash
-   cd frontend-track1
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   yarn install
-   # or
-   npm install
-   ```
-
-3. **Start development server:**
-   ```bash
-   yarn dev
-   # or
-   npm run dev
-   ```
-
-4. **Access the application:**
-   - Open browser: `http://localhost:5173`
-   - The app will automatically reload on file changes
-
-5. **Build for production (optional):**
-   ```bash
-   yarn build
-   # Output: dist/ folder
-   ```
-
----
-
-### Backend Setup (Track 2)
-
-1. **Navigate to backend directory:**
-   ```bash
-   cd backend-track2
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Seed the database (creates sample data):**
-   ```bash
-   npm run seed
-   ```
-   This will:
-   - Create SQLite database file (`database.sqlite`)
-   - Insert 4 sample employees
-   - Insert 8 sample tasks
-
-4. **Start the server:**
-   ```bash
-   npm run dev    # Development mode with nodemon (auto-restart)
-   # or
-   npm start      # Production mode
-   ```
-
-5. **Server will run on:**
-   - **Port**: `5000`
-   - **Base URL**: `http://localhost:5000`
-   - **API Endpoint**: `http://localhost:5000/api`
-
-6. **Test the API:**
-   - Use Postman collection: `backend-track2/postman/TrackUrTask_API_Collection.json`
-   - Or use curl commands (see API Endpoints section below)
-
----
-
-## Tech Stack Used
-
-### Frontend (Track 1)
-- **Framework**: React 18.2.0
-- **Build Tool**: Vite 5.0.8
-- **Routing**: React Router DOM 6.21.1
-- **Styling**: Tailwind CSS 3.4.0
-- **Icons**: Lucide React 0.294.0
-- **Font**: Open Sans (Google Fonts)
-- **State Management**: React Hooks (useState, useEffect)
-- **Persistence**: Browser LocalStorage API
-
-### Backend (Track 2)
-- **Runtime**: Node.js
-- **Framework**: Express.js 4.18.2
-- **Database**: SQLite 3 (via sqlite3 5.1.6)
-- **ORM**: Sequelize 6.35.2
-- **Authentication**: JSON Web Tokens (jsonwebtoken 9.0.2)
-- **Validation**: validator.js 13.11.0
-- **Security**: bcryptjs 2.4.3 (for password hashing)
-- **CORS**: cors 2.8.5
-- **Environment**: dotenv 16.3.1
-
-### Development Tools
-- **Package Manager**: Yarn / npm
-- **Code Editor**: VS Code (recommended)
-- **API Testing**: Postman
-- **Version Control**: Git
-
----
-
-## API Endpoints (Backend - Track 2)
-
-### Base URL
-```
-http://localhost:5000/api
-```
-
-### Authentication
-```
-POST   /api/auth/login
-Body: { "email": "admin@company.com", "password": "admin123" }
-Response: { "success": true, "token": "jwt_token" }
-```
+### Auth
+| Method | Path | Access | Description |
+|---|---|---|---|
+| POST | `/api/auth/login` | Public | `{ email, password }` → `{ token }` |
 
 ### Employees
-```
-GET    /api/employees              # List all employees
-GET    /api/employees/:id          # Get single employee with tasks
-POST   /api/employees              # Create employee
-PUT    /api/employees/:id          # Update employee
-DELETE /api/employees/:id          # Delete employee (and their tasks)
-```
+| Method | Path | Access | Description |
+|---|---|---|---|
+| GET | `/api/employees` | Public | List employees |
+| GET | `/api/employees/:id` | Public | Employee with tasks |
+| POST | `/api/employees` | JWT | Create employee |
+| PUT | `/api/employees/:id` | JWT | Update employee |
+| DELETE | `/api/employees/:id` | JWT | Delete employee (cascades to their tasks) |
 
 ### Tasks
-```
-GET    /api/tasks                  # List all tasks
-GET    /api/tasks?status=Pending   # Filter by status
-GET    /api/tasks?employeeId=1      # Filter by employee
-GET    /api/tasks/:id              # Get single task
-POST   /api/tasks                  # Create task (Protected - requires JWT)
-PUT    /api/tasks/:id              # Update task (Protected - requires JWT)
-DELETE /api/tasks/:id              # Delete task (Protected - requires JWT)
-```
+| Method | Path | Access | Description |
+|---|---|---|---|
+| GET | `/api/tasks` | Public | List tasks (`?status=`, `?employeeId=`) |
+| GET | `/api/tasks/:id` | Public | Single task |
+| POST | `/api/tasks` | JWT | Create task |
+| PUT | `/api/tasks/:id` | JWT | Update task |
+| DELETE | `/api/tasks/:id` | JWT | Delete task |
 
-### Testing with Postman
-1. Import `backend-track2/postman/TrackUrTask_API_Collection.json` into Postman
-2. Set collection variable `baseUrl` = `http://localhost:5000`
-3. Run "Login" request to get token
-4. Update `token` variable in collection
-5. Test all endpoints
+### Stats
+| Method | Path | Access | Description |
+|---|---|---|---|
+| GET | `/api/stats/dashboard` | Public | Totals by status/priority, recent tasks, per-employee workload |
 
-### Testing with cURL
+### Health
+| Method | Path | Description |
+|---|---|---|
+| GET | `/health` | `{ status, db }` — checks the database connection; used for infra health checks |
+
+Task `status` ∈ `Pending | In Progress | Completed`. Task `priority` ∈ `Low | Medium | High` (default `Medium`).
+
+A Postman collection is available at `backend-track2/postman/ProU_API_Collection.json`.
+
+---
+
+## Local Setup
+
+### Prerequisites
+- Node.js 18+
+- Docker (for local PostgreSQL) — or a PostgreSQL instance of your own
+
+### 1. Database (local dev)
 ```bash
-# Get all employees
-curl http://localhost:5000/api/employees
+cd backend-track2
+docker compose up -d      # starts Postgres on localhost:5434
+```
 
-# Get all tasks
-curl http://localhost:5000/api/tasks
+### 2. Backend
+```bash
+cd backend-track2
+npm install
+cp .env.example .env      # then edit values as needed
+npm run migrate           # create schema
+npm run seed               # create admin user + sample employees/tasks
+npm run dev                 # http://localhost:5000
+```
 
-# Filter tasks by status
-curl "http://localhost:5000/api/tasks?status=Pending"
+### 3. Frontend
+```bash
+cd frontend-track1
+npm install
+cp .env.example .env      # VITE_API_URL=http://localhost:5000/api
+npm run dev                 # http://localhost:5173
+```
 
-# Create employee
-curl -X POST http://localhost:5000/api/employees \
-  -H "Content-Type: application/json" \
-  -d '{"name":"John Doe","role":"Developer","email":"john@company.com"}'
+### Tests
+```bash
+cd backend-track2
+npm test                   # requires DATABASE_URL_TEST / a running Postgres
 ```
 
 ---
 
+## Environment Variables
 
-<img width="1736" height="844" alt="Screenshot 2026-01-19 032711" src="https://github.com/user-attachments/assets/2f4d7b44-142e-4cec-bfa7-b2389002c44f" />
+### Backend (`backend-track2/.env`, see `.env.example`)
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Postgres connection string |
+| `DATABASE_URL_TEST` | Postgres connection string used by `npm test` |
+| `DB_SSL` | `true` to enable TLS (required for RDS) |
+| `PORT` | API listen port |
+| `JWT_SECRET` | JWT signing secret — required, no default; generate a long random value |
+| `FRONTEND_URL` | Deployed frontend origin, primary allowed CORS origin |
+| `CORS_ORIGINS` | Extra comma-separated allowed origins |
+| `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | Credentials created by `npm run seed` |
 
+### Frontend (`frontend-track1/.env` / `.env.production`, see `.env.example` / `.env.production.example`)
+| Variable | Purpose |
+|---|---|
+| `VITE_API_URL` | Base URL of the backend API the built frontend calls |
 
-
-### Frontend Screenshots
-- **Dashboard Page**: Overview with statistics and recent tasks
-- **Employees Page**: Grid view of all employees with task breakdown
-- **Tasks Page**: All tasks with filtering options
-- **Employee Detail Page**: Individual employee profile with assigned tasks
-
-### Backend Screenshots
-- **Postman Collection**: API testing with all endpoints
-- **API Response Examples**: JSON responses for different endpoints
-
-
----
-
-## Assumptions
-
-1. **Task Assignment**: Each task is assigned to exactly one employee (one-to-many relationship).
-
-2. **Mock Data (Frontend)**: 
-   - Frontend uses static mock data stored in `src/data/mockData.js`
-   - No API calls are made from the frontend
-   - Data persists in browser localStorage after user interactions
-
-3. **Database (Backend)**:
-   - SQLite database file is created automatically on first run
-   - No external database server setup required
-   - Database file (`database.sqlite`) is stored in project root
-
-4. **Authentication**:
-   - JWT authentication is implemented for task modification endpoints (POST/PUT/DELETE)
-   - GET endpoints are publicly accessible
-   - Default login credentials: `admin@company.com` / `admin123`
-
-5. **Task Status**: Limited to three values: `Pending`, `In Progress`, `Completed`
-
-6. **Task Priority**: Optional field with values: `Low`, `Medium`, `High` (default: `Medium`)
-
-7. **Email Uniqueness**: Employee email addresses must be unique across the system
-
-8. **Cascading Deletes**: Deleting an employee automatically deletes all associated tasks
+`.env` files are gitignored everywhere; only `.env.example` / `.env.production.example` placeholder files are committed.
 
 ---
 
-## Features 
+## Database Migrations & Seeding
 
-### Frontend 
-- ✅ **LocalStorage Persistence**: Tasks added by users persist after page refresh
-- ✅ **Employee Search**: Search employees by name or role
-- ✅ **Task Filtering**: Filter tasks by status (All, Pending, In Progress, Completed)
-- ✅ **Responsive Design**: Fully responsive layout for mobile, tablet, and desktop
-- ✅ **Modern UI**: Custom color palette (coral/green), rounded corners, smooth animations
-- ✅ **Dashboard Analytics**: Visual progress bars and task breakdown statistics
+Schema is managed by Sequelize CLI migrations under `backend-track2/src/migrations` (never `sequelize.sync()` against production):
 
-### Backend 
-- ✅ **JWT Authentication**: Secure authentication for protected routes
-- ✅ **Request Logging**: Middleware for logging all API requests with status codes
-- ✅ **Error Handling**: Comprehensive error handling with appropriate HTTP status codes
-- ✅ **Input Validation**: Server-side validation for all inputs
-- ✅ **Postman Collection**: Complete API collection for easy testing
-- ✅ **Database Seeder**: Automated seed script for sample data
-- ✅ **SQLite Integration**: No external database setup required
+```bash
+npm run migrate        # apply all pending migrations
+npm run migrate:undo    # roll back the last migration
+npm run seed             # wipe and repopulate with an admin user + sample data
+```
 
+Change `SEED_ADMIN_PASSWORD` from its default before seeding any non-local environment.
 
 ---
 
-## Deployment
+## Production Deployment Architecture (planned)
 
-### Frontend Deployment (Netlify)
-- **Live Demo**: [https://hstrackurtasks.netlify.app/]
-- **Build Command**: `yarn build`
-- **Publish Directory**: `dist`
+The intended AWS deployment (not yet provisioned):
 
+```
+                 ┌─────────────────────┐
+   Browser  ───▶ │ CloudFront + S3      │  React static build (frontend-track1/dist)
+                 └──────────┬───────────┘
+                            │  HTTPS (VITE_API_URL)
+                            ▼
+                 ┌─────────────────────┐
+                 │ EC2 (Node/Express)   │  PM2-managed API process (ecosystem.config.js)
+                 └──────────┬───────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │ RDS (PostgreSQL)     │  DB_SSL=true, private subnet
+                 └─────────────────────┘
+```
+
+- **S3 + CloudFront** serve the Vite production build; `VITE_API_URL` is baked in at build time to point at the EC2 API.
+- **EC2** runs the Express API under **PM2** (`pm2 start ecosystem.config.js`), reading configuration from environment variables (never hardcoded).
+- **RDS PostgreSQL** is the production database, reached over `DATABASE_URL` with `DB_SSL=true`.
+- No AWS resources have been created yet — this section describes the target architecture for the next phase.
 
 ---
 
+## Security Considerations
 
-Build with ❤️ By Harshita Singh
-- **Email**: [sharshitaa3@gmail.com]
-
-
-
+- Passwords hashed with bcrypt; JWTs signed with a required, non-default `JWT_SECRET`.
+- CORS is an explicit allow-list (`FRONTEND_URL` + `CORS_ORIGINS`); it never falls back to `*`.
+- Write endpoints (create/update/delete) require a valid JWT via the `protect` middleware.
+- All secrets (`DATABASE_URL`, `JWT_SECRET`, seed admin credentials) are supplied via environment variables, never committed — `.env` is gitignored and only `.env.example` placeholders are tracked.
+- Server-side input validation on all write endpoints (`src/middleware/validators.js`).
+- `/health` avoids leaking internal error details; only reports `ok`/`error` + DB connectivity.
+- In production, terminate TLS in front of the API (e.g. via a load balancer/CloudFront) and set `DB_SSL=true` for encrypted connections to RDS.
 
 ---
 
-## 🙏 Acknowledgments
+## Tech Stack
 
-- React, Express, and open-source community for excellent tools and documentation
-
-
+**Frontend:** React 18, Vite 5, React Router 6, Tailwind CSS, Axios
+**Backend:** Node.js, Express 4, Sequelize 6, PostgreSQL (`pg`), jsonwebtoken, bcryptjs, validator.js
+**Testing:** Node's built-in test runner + Supertest
+**Process management:** PM2 (`ecosystem.config.js`)
+**Local dev database:** Docker Compose (Postgres 16)

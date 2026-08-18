@@ -1,30 +1,24 @@
 const { Sequelize } = require('sequelize');
-const path = require('path');
+const config = require('./database')[process.env.NODE_ENV || 'development'];
 
-// SQLite database file path (in project root)
-const dbPath = path.join(__dirname, '../../database.sqlite');
+if (!config.url) {
+  console.error(
+    'DATABASE_URL is not set. Copy .env.example to .env and set DATABASE_URL to a Postgres connection string.'
+  );
+  process.exit(1);
+}
 
-// Create Sequelize instance with SQLite
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: dbPath,
-  logging: false, // Set to console.log to see SQL queries
-  define: {
-    timestamps: true,
-    underscored: false,
-  },
+const sequelize = new Sequelize(config.url, {
+  dialect: config.dialect,
+  dialectOptions: config.dialectOptions,
+  logging: false,
+  define: config.define,
 });
 
-// Test connection
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('SQLite database connected successfully');
-    
-    // Sync models (create tables if they don't exist)
-    await sequelize.sync({ alter: false });
-    console.log('Database models synchronized');
-    
+    console.log('PostgreSQL connected successfully');
     return sequelize;
   } catch (error) {
     console.error('Unable to connect to the database:', error.message);

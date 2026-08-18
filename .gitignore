@@ -6,7 +6,29 @@ node_modules/
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.test
 **/.env
+**/.env.development
+**/.env.production
+**/.env.test
+# Note: .env.example / .env.*.example files are intentionally kept tracked.
+
+# Secrets & credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*token*.json
+.aws/
+aws/credentials
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.pgpass
 
 # Database files
 # Uncomment below if you want to exclude database from git

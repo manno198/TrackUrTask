@@ -1,6 +1,7 @@
 const { sequelize } = require('../config/db');
 const Employee = require('./Employee');
 const Task = require('./Task');
+const User = require('./User');
 
 // Define associations
 // Employee hasMany Tasks
@@ -21,5 +22,6 @@ module.exports = {
   sequelize,
   Employee,
   Task,
+  User,
 };
 

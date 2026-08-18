@@ -1,58 +1,78 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 
-const EmployeeCard = ({ employee }) => {
-  const completedTasks = employee.tasks.filter(t => t.status === 'Completed').length;
-  const inProgressTasks = employee.tasks.filter(t => t.status === 'In Progress').length;
-  const pendingTasks = employee.tasks.filter(t => t.status === 'Pending').length;
+const avatarColors = ['bg-ink text-chartreuse', 'bg-forest text-chartreuse', 'bg-electric text-ink'];
+
+const EmployeeCard = ({ employee, taskCounts, index = 0, onEdit, onDelete }) => {
+  const counts = taskCounts || { total: 0, completed: 0, inProgress: 0, pending: 0 };
+  const avatarClass = avatarColors[index % avatarColors.length];
+  const initial = employee.name.charAt(0).toUpperCase();
 
   return (
-    <Link
-      to={`/employees/${employee.id}`}
-      data-testid={`employee-card-${employee.id}`}
-      className="card hover:scale-105 hover:shadow-xl"
-    >
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-500/20 dark:to-primary-600/20 flex items-center justify-center flex-shrink-0">
-          <User className="w-6 h-6 text-primary-700 dark:text-primary-400" />
+    <div className="card" data-testid={`employee-card-${employee.id}`}>
+      <Link to={`/employees/${employee.id}`} className="flex items-start gap-4">
+        <div className={`w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-ink font-heading font-extrabold text-2xl ${avatarClass}`}>
+          {initial}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 truncate" data-testid={`employee-name-${employee.id}`}>
+          <h3 className="text-lg font-heading font-extrabold truncate" data-testid={`employee-name-${employee.id}`}>
             {employee.name}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3" data-testid={`employee-role-${employee.id}`}>{employee.role}</p>
-          
+          <p className="eyebrow text-ink/50 mb-3" data-testid={`employee-role-${employee.id}`}>{employee.role}</p>
+
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-300">Total Tasks</span>
-              <span className="font-semibold text-gray-900 dark:text-white" data-testid={`employee-total-tasks-${employee.id}`}>{employee.tasks.length}</span>
+              <span className="text-ink/60 font-medium">Total Tasks</span>
+              <span className="font-mono font-bold" data-testid={`employee-total-tasks-${employee.id}`}>{counts.total}</span>
             </div>
-            
+
             <div className="flex flex-wrap gap-2">
-              {completedTasks > 0 && (
-                <span className="badge bg-green-100 dark:bg-green-500/20 text-green-800 dark:text-green-400 border border-green-200 dark:border-green-500/30 flex items-center gap-1 rounded-lg" data-testid={`employee-completed-${employee.id}`}>
-                  <CheckCircle className="w-3 h-3" />
-                  {completedTasks} Completed
+              {counts.completed > 0 && (
+                <span className="badge bg-spring text-ink" data-testid={`employee-completed-${employee.id}`}>
+                  {counts.completed} Completed
                 </span>
               )}
-              {inProgressTasks > 0 && (
-                <span className="badge bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/30 flex items-center gap-1 rounded-lg" data-testid={`employee-inprogress-${employee.id}`}>
-                  <Clock className="w-3 h-3" />
-                  {inProgressTasks} In Progress
+              {counts.inProgress > 0 && (
+                <span className="badge bg-electric text-ink" data-testid={`employee-inprogress-${employee.id}`}>
+                  {counts.inProgress} In Progress
                 </span>
               )}
-              {pendingTasks > 0 && (
-                <span className="badge bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 border border-red-200 dark:border-red-500/30 flex items-center gap-1 rounded-lg" data-testid={`employee-pending-${employee.id}`}>
-                  <AlertCircle className="w-3 h-3" />
-                  {pendingTasks} Pending
+              {counts.pending > 0 && (
+                <span className="badge bg-flash text-ink" data-testid={`employee-pending-${employee.id}`}>
+                  {counts.pending} Pending
                 </span>
               )}
             </div>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+
+      {(onEdit || onDelete) && (
+        <div className="flex gap-2 pt-3 mt-3 border-t-2 border-ink/10">
+          {onEdit && (
+            <button
+              onClick={() => onEdit(employee)}
+              data-testid={`employee-edit-${employee.id}`}
+              className="btn btn-secondary flex-1 py-1.5 text-xs"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Edit
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(employee)}
+              data-testid={`employee-delete-${employee.id}`}
+              className="btn btn-danger flex-1 py-1.5 text-xs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
