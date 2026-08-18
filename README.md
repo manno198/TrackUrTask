@@ -181,7 +181,9 @@ Change `SEED_ADMIN_PASSWORD` from its default before seeding any non-local envir
 
 ---
 
-## Production Deployment Architecture (currently live)
+## Production Deployment Architecture
+
+### Current (live): S3 → EC2 → RDS
 
 Deployed on AWS (`ap-south-1` / Mumbai):
 
@@ -207,7 +209,9 @@ Deployed on AWS (`ap-south-1` / Mumbai):
 - **EC2** runs the Express API under **PM2** (`pm2 start ecosystem.config.js`) behind an **Nginx** reverse proxy on port 80 → `localhost:5000`; configuration comes entirely from environment variables (never hardcoded). Port 5000 is not exposed to the internet — only Nginx on 80 is.
 - **RDS PostgreSQL** is the production database, reached over `DATABASE_URL` with `DB_SSL=true`. Its security group only allows inbound traffic from the EC2 instance's security group — never `0.0.0.0/0`.
 
-**Why S3 static hosting instead of CloudFront:** the original design puts CloudFront (with Origin Access Control) in front of S3 as the single HTTPS entry point, also proxying `/api/*` to EC2 so the frontend and API share one HTTPS origin. CloudFront distribution creation is currently blocked on this AWS account pending AWS's own account verification process, so the site is temporarily served directly via **S3 static website hosting** (plain HTTP, publicly readable bucket — there's no auth mechanism for S3 website endpoints). Since both the frontend and the API are HTTP-only in this interim setup, there's no mixed-content issue; CORS is restricted via `FRONTEND_URL`/`CORS_ORIGINS` to just the S3 website origin. Once CloudFront is available, the plan is to switch back to the CloudFront + OAC design (S3 bucket private again, HTTPS end-to-end, custom domain optional).
+### Planned: CloudFront + S3 → EC2 → RDS
+
+The target design fronts S3 (private, via Origin Access Control) and the EC2 API with a single CloudFront distribution as the HTTPS entry point, replacing the current plain-HTTP S3 website hosting. **Not deployed yet** — CloudFront distribution creation is currently blocked on this AWS account pending AWS's own account verification process. This is a temporary AWS-side restriction, not an architectural choice; the switch-over requires no application code changes, only AWS-side reconfiguration.
 
 ---
 
@@ -221,7 +225,7 @@ Deployed on AWS (`ap-south-1` / Mumbai):
 - `/health` avoids leaking internal error details; only reports `ok`/`error` + DB connectivity.
 - RDS is not publicly accessible; its security group only trusts the EC2 instance's security group on port 5432.
 - **Interim deployment trade-off:** the current S3 static-website hosting setup (see architecture above) serves the frontend over plain HTTP with a public bucket, since it's a stopgap for a CloudFront-blocked AWS account. Its own JS bundle intentionally publishes demo admin credentials on the sign-in page for reviewer convenience — this is only appropriate for a demo deployment seeded with sample data, never for an app holding real user data.
-- **Demo login:** `admin@company.com` / `TrackUr2026Demo!` (also shown on the deployed sign-in page) — this is seed data for demo/review purposes only.
+- **Demo login:** shown directly on the deployed sign-in page — this is seed data for demo/review purposes only.
 - In production (once CloudFront/HTTPS is in place), terminate TLS in front of the API as well and keep `DB_SSL=true` for encrypted connections to RDS.
 
 ---
