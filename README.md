@@ -4,6 +4,8 @@ A full-stack employee task tracking app: React/Vite frontend, Node/Express REST 
 
 **Live:** [Frontend](http://trackurtask-frontend-903797724213.s3-website.ap-south-1.amazonaws.com) · [API Health Check](http://3.108.249.124/health) · Demo login is shown directly on the sign-in page
 
+**Note on Frontend URL:** Deployed via S3 static website hosting over HTTP for this demo evaluation. If your browser blocks mixed content or forces HTTPS, you can view the local setup instructions below or check the API health check directly. Demo credentials are clearly shown on the sign-in page.
+
 ---
 
 ## Skills Demonstrated
